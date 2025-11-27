@@ -118,10 +118,6 @@ func (cli *Client) handleDeviceNotification(ctx context.Context, node *waBinary.
 	}
 	cachedParticipantHash := participantListHashV2(cached.devices)
 	for _, child := range node.GetChildren() {
-		if child.Tag != "add" && child.Tag != "remove" {
-			cli.Log.Debugf("Unknown device list change tag %s", child.Tag)
-			continue
-		}
 		cag := child.AttrGetter()
 		deviceHash := cag.String("device_hash")
 		deviceLIDHash := cag.OptionalString("device_lid_hash")
@@ -144,7 +140,13 @@ func (cli *Client) handleDeviceNotification(ctx context.Context, node *waBinary.
 				})
 			}
 		case "update":
-			// ???
+			// Since "update" means we need to re-fetch the device anyway we just drop the cache and will refetch the entire list next time we need it
+			cli.Log.Warnf("%s's device list updated, dropping cached devices", from)
+			delete(cli.userDevicesCache, from)
+			continue
+		default:
+			cli.Log.Debugf("Unknown device list change tag %s", child.Tag)
+			continue
 		}
 		newParticipantHash := participantListHashV2(cached.devices)
 		if newParticipantHash == deviceHash {
