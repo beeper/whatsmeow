@@ -391,6 +391,9 @@ func (evt *Message) UnwrapRaw() *Message {
 		evt.Message = evt.Message.GetEphemeralMessage().GetMessage()
 		evt.IsEphemeral = true
 	}
+	if evt.Message.GetGroupMentionedMessage().GetMessage() != nil {
+		evt.Message = evt.Message.GetGroupMentionedMessage().GetMessage()
+	}
 	if evt.Message.GetViewOnceMessage().GetMessage() != nil {
 		evt.Message = evt.Message.GetViewOnceMessage().GetMessage()
 		evt.IsViewOnce = true
